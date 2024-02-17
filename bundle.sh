@@ -1,8 +1,8 @@
 cd ../daemon
-#pnpm build
+pnpm build
 
 cd ../panel-instance
-#pnpm build
+pnpm build
 
 cd ../bundler
 rm -rf ./dist
