@@ -1,5 +1,7 @@
 #!/bin/sh
 
+domain=$1
+
 # Color variables
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -37,10 +39,33 @@ echo "${GREEN}»   Dependencies installed [2/3]"
 
 # Start the panel
 echo "${CYAN}»   Starting the panel [3/3]"
+postgresPassword=$(openssl rand -hex 16)
+appToken=$(openssl rand -hex 16)
+
+sudo -u postgres psql -c "CREATE USER revpanel WITH PASSWORD '$postgresPassword';"
+
+# Configure the web panel
 cd web
+
+touch .env
+echo "NODE_ENV=\"production\"" >> .env
+echo "NEXT_PUBLIC_ENV=\"production\"" >> .env
+echo "DATABASE_URL=\"postgresql://revpanel:$postgresPassword@localhost:5432/panel?schema=public\"" >>
+echo "APP_URL=\"https://$domain\"" >> .env
+echo "ADMIN_KEY=\"$appToken\"" >> .env
+
 pm2 start ecosystem.config.js
+
+# Configure the api
 cd ../api
+
+touch .env
+echo "DATABASE_URL=\"postgresql://revpanel:$postgresPassword@localhost:5432/daemon?schema=public\"" >> .env
+echo "API_TOKEN=\"$appToken\"" >> .env
+
 pm2 start ecosystem.config.js
+
+# Save and enable pm2
 pm2 save
 pm2 startup
 echo "${GREEN}»   Panel started [3/3]"
