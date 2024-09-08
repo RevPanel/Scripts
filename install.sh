@@ -18,7 +18,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Join the RevPanel folder
-mkdir -p /etc/revpanel && cd /etc/revpanel
+mkdir -p /etc/revpanel
+cd /etc/revpanel
 
 # If already installed, exit
 if [ -f ".env" ]; then
@@ -71,8 +72,12 @@ echo "${GREEN}»   Dependencies installed [1/4]"
 echo "${CYAN}»   Setting up WebServer [2/4]"
 
 echo "${WHITE}"
-read -p "Enter your panel domain (e.g panel.example.com): " DOMAIN
-certbot certonly --nginx -d ${DOMAIN} -d api.${DOMAIN} --non-interactive --agree-tos -m admin@${DOMAIN}
+
+if [[ -z "${DOMAIN}" ]]; then
+    read -p "Enter your panel domain (e.g panel.example.com): " DOMAIN
+fi
+
+sudo certbot certonly --nginx -d ${DOMAIN} -d api.${DOMAIN} --non-interactive --agree-tos -m admin@${DOMAIN}
 
 echo "server {
     server_name ${DOMAIN};
@@ -123,8 +128,8 @@ server {
     server_name ${DOMAIN} api.${DOMAIN};
     return 404;
 }" > /etc/nginx/sites-available/revpanel
-ln -s /etc/nginx/sites-available/revpanel /etc/nginx/sites-enabled/revpanel
-systemctl reload nginx
+sudo ln -s /etc/nginx/sites-available/revpanel /etc/nginx/sites-enabled/revpanel
+sudo systemctl reload nginx
 
 echo "${GREEN}»   WebServer setup complete [2/4]"
 
@@ -141,18 +146,18 @@ API_TOKEN=$(openssl rand -hex 32)
 sudo docker run --name revpanel-postgres -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -p 127.0.0.1:5432:5432 --restart always -d postgres:16-alpine
 
 cd daemon
-pnpm install
+corepack pnpm install
 
 echo "NODE_ENV=production
 DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:3306/daemon
 API_TOKEN=${API_TOKEN}" > .env
 
-pnpm run migrate:run
-pnpm build
+corepack pnpm run migrate:run
+corepack pnpm build
 pm2 start dist/main.js --name=revpanel-daemon
 
 cd ../web
-pnpm install
+corepack pnpm install
 
 echo "NODE_ENV=production
 DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:3306/panel
@@ -160,8 +165,8 @@ APP_URL=https://${DOMAIN}
 BACKEND_URL=https://api.${DOMAIN}
 ADMIN_KEY=${API_TOKEN}" > .env
 
-pnpm run migrate:run
-pnpm build
+corepack pnpm run migrate:run
+corepack pnpm build
 
 pm2 start .next/standalone/server.js --name=revpanel-web
 
