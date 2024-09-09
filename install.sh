@@ -48,7 +48,7 @@ echo "                            ${GREEN}RevPanel Installer v2.0.0"
 # --------------------------------------------
 
 # -------------[ #1 DEPENDENCIES ]-------------
-echo "${CYAN}»   Installing dependencies [1/4]"
+echo "${CYAN}»   Installing dependencies [1/3]"
 
 sudo apt update
 sudo apt install curl openssl certbot python3-certbot-nginx nginx -y
@@ -66,10 +66,10 @@ fi
 corepack enable
 npm install -g pm2
 
-echo "${GREEN}»   Dependencies installed [1/4]"
+echo "${GREEN}»   Dependencies installed [1/3]"
 
 # -------------[ #2 WEBSERVER ]-------------
-echo "${CYAN}»   Setting up WebServer [2/4]"
+echo "${CYAN}»   Setting up WebServer [2/3]"
 
 echo "${WHITE}"
 
@@ -131,12 +131,12 @@ server {
 sudo ln -s /etc/nginx/sites-available/revpanel /etc/nginx/sites-enabled/revpanel
 sudo systemctl reload nginx
 
-echo "${GREEN}»   WebServer setup complete [2/4]"
+echo "${GREEN}»   WebServer setup complete [2/3]"
 
 # -------------[ #3 CONFIGURATION ]-------------
 
 
-echo "${CYAN}»   Configuring the panel [3/4]"
+echo "${CYAN}»   Configuring the panel [3/3]"
 git clone https://github.com/RevPanel/Daemon daemon
 git clone https://github.com/RevPanel/Panel web
 
@@ -173,10 +173,6 @@ pm2 start .next/standalone/server.js --name=revpanel-web
 pm2 save
 pm2 startup
 
-echo "${GREEN}»   Panel configured [3/4]"
+echo "${GREEN}»   Panel configured [3/3]"
 
-# Start the panel
-echo "${CYAN}»   Starting.. [4/4]"
-sudo bash setup.sh ${DOMAIN}
-echo "${GREEN}»   Panel successfully installed [4/4]"
 echo "${RESET}"

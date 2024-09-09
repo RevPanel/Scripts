@@ -17,16 +17,16 @@ if [ "$(id -u)" != "0" ]; then
     sudo sh "$0" "$@"
 fi
 
-# Join the RevPanel folder
-cd /etc/revpanel || mkdir /etc/revpanel && cd /etc/revpanel
-
 # Check if RevPanel is installed
-if [ ! -f ".env" ]; then
+if [ ! -f "/etc/revpanel/.env" ]; then
     echo "${RED}»   RevPanel is not installed!"
     echo "${RED}»   If you want to install RevPanel, please run the installer"
     echo "${RESET}"
     exit 1
 fi
+
+# Join the RevPanel folder
+cd /etc/revpanel
 
 # Print logo
 echo "${PURPLE}"
@@ -43,12 +43,13 @@ cat << "EOF"
 EOF
 echo ""
 echo ""
-echo "                            ${GREEN}RevPanel Uninstaller v1.0.0"
+echo "                            ${GREEN}RevPanel Uninstaller v2.0.0"
 
 # Stop the panel
 echo "${CYAN}»   Stopping the panel [1/2]"
-pm2 stop revpanel-web revpanel-api
-pm2 delete revpanel-web revpanel-api
+sudo docker rm -f revpanel-postgres
+pm2 stop revpanel-web revpanel-daemon
+pm2 delete revpanel-web revpanel-daemon
 pm2 save
 echo "${GREEN}»   Panel stopped [1/2]"
 
