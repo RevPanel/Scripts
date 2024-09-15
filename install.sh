@@ -138,7 +138,7 @@ echo "${GREEN}»   WebServer setup complete [2/3]"
 
 echo "${CYAN}»   Configuring the panel [3/3]"
 git clone https://github.com/RevPanel/Daemon daemon
-git clone https://github.com/RevPanel/Panel web
+git clone https://github.com/RevPanel/Panel panel
 
 POSTGRES_PASSWORD=$(openssl rand -hex 32)
 API_TOKEN=$(openssl rand -hex 32)
@@ -149,18 +149,18 @@ cd daemon
 corepack pnpm install
 
 echo "NODE_ENV=production
-DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:3306/daemon
+DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:5432/daemon
 API_TOKEN=${API_TOKEN}" > .env
 
 corepack pnpm run migrate:run
 corepack pnpm build
 pm2 start dist/main.js --name=revpanel-daemon
 
-cd ../web
+cd ../panel
 corepack pnpm install
 
 echo "NODE_ENV=production
-DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:3306/panel
+DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@localhost:5432/panel
 APP_URL=https://${DOMAIN}
 BACKEND_URL=https://api.${DOMAIN}
 ADMIN_KEY=${API_TOKEN}" > .env
@@ -168,7 +168,7 @@ ADMIN_KEY=${API_TOKEN}" > .env
 corepack pnpm run migrate:run
 corepack pnpm build
 
-pm2 start .next/standalone/server.js --name=revpanel-web
+pm2 start npm --name=revpanel-web -- start
 
 pm2 save
 pm2 startup
